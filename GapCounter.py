@@ -1,51 +1,38 @@
 import argparse
 import concurrent.futures
+import re
 
 def count_n_and_gaps(sequence):
-    n_count = sequence.count('N')
-    gap_count = 0
-    i = 0
-    while i < len(sequence):
-        if sequence[i] == 'N':
-            gap_count += 1
-            while i < len(sequence) and sequence[i] == 'N':
-                i += 1
-        else:
-            i += 1
-    return n_count, gap_count
+    # 使用正则表达式查找连续的 'N' 序列
+    gaps = re.findall('N+', sequence)
+    return sequence.count('N'), len(gaps)
 
-def process_sequence(seq_name, sequence):
-    n_count, gap_count = count_n_and_gaps(sequence)
-    return seq_name, n_count, gap_count
+def process_sequences(data):
+    seq_name, sequence = data
+    return seq_name, *count_n_and_gaps(sequence)
+
+def read_fasta(file_path):
+    with open(file_path, 'r') as file:
+        return file.read().split('>')[1:]  # 分割每个序列，跳过空的第一部分
+
+def split_sequences(raw_sequences):
+    sequences = []
+    for raw_sequence in raw_sequences:
+        lines = raw_sequence.split('\n', 1)
+        seq_name = lines[0].strip()
+        sequence = lines[1].replace('\n', '')  # 移除换行符
+        sequences.append((seq_name, sequence))
+    return sequences
 
 def process_fasta(file_path, output_file):
-    with open(file_path, 'r') as file:
-        lines = file.readlines()
+    raw_sequences = read_fasta(file_path)
+    sequences = split_sequences(raw_sequences)
 
-    sequences = []
-    current_seq = ''
-    seq_name = ''
-
-    for line in lines:
-        if line.startswith('>'):
-            if current_seq:
-                sequences.append((seq_name, current_seq))
-            seq_name = line.strip().split('>')[1]
-            current_seq = ''
-        else:
-            current_seq += line.strip()
-
-    if current_seq:
-        sequences.append((seq_name, current_seq))
-
-    results = []
     with concurrent.futures.ProcessPoolExecutor() as executor:
-        futures = [executor.submit(process_sequence, seq[0], seq[1]) for seq in sequences]
-        for future in concurrent.futures.as_completed(futures):
-            results.append(future.result())
+        results = list(executor.map(process_sequences, sequences))
 
-    total_n = sum([result[1] for result in results])
-    total_gaps = sum([result[2] for result in results])
+    total_n = sum(n for _, n, _ in results)
+    total_gaps = sum(gaps for _, _, gaps in results)
 
     with open(output_file, 'w') as out_file:
         out_file.write("File, Total Ns, Total Gaps\n")
