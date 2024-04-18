@@ -30,6 +30,7 @@ cd UniGapClose
 
 
 #### step by step
+##### scaffold vs. scaffold
 1. 基因组比对
 ```shell
 unimap --cs -t 120 -cs asm5 target.chr.fa query.fa > your_alignment.paf
@@ -55,4 +56,5 @@ python ./FindBestPAFRecord.py your_alignment.paf raw_gaps.bed your_alignment.bes
 python ./ReplaceGaps.py your_alignment.best.paf target.chr.fa query.fa chr.replaceGaps.fa chr.replaceGaps.gap.bed
 ```
 
-5. scaffold vs contig (self)
+##### scaffold vs contig (self)
+5. 
