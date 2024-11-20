@@ -1,5 +1,3 @@
-## 英文版本 (English Version)
-
 **Filename:** `README_EN.md`
 
 # Genome Gap Filler Pipeline
@@ -230,6 +228,8 @@ Contributions are welcome! Please follow these steps:
 ### License
 
 This project is licensed under the [MIT License](LICENSE).
+
+
 
 ### Contact
 
